@@ -31,12 +31,11 @@ def heuristic(candidates, curr, k, distance_func, data, level_, num_levels):
     
     candidates = sorted(not_selected, key=lambda a: a[1])
     
-    # Ensure diversity by considering angular difference between candidates
     for c, curr_dist in candidates[1:]:
         c_data = data[c]
         angles = [np.dot(c_data, a) / (np.linalg.norm(c_data) * np.linalg.norm(a)) for a in added_data]
         min_angle = min(angles)
-        if curr_dist < min([distance_func(c_data, a) for a in added_data]) and min_angle > threshold_angle:  # e.g., angle threshold
+        if curr_dist < min([distance_func(c_data, a) for a in added_data]) and min_angle > threshold_angle:
             result.append((c, curr_dist))
             result_indx_set.add(c)
             added_data.append(c_data)
@@ -51,9 +50,6 @@ def k_closest(candidates: list, curr, k, distance_func, data):
     return sorted(candidates, key=lambda a: a[1])[:k]
     
 class HNSW:
-    # self._graphs[level][i] contains a {j: dist} dictionary,
-    # where j is a neighbor of i and dist is distance
-
     def _distance(self, x, y):
         return self.distance_func(x, [y])[0]
 
@@ -106,21 +102,14 @@ class HNSW:
         data.append(elem)
 
         if point is not None:
-            for i, layer in enumerate(reversed(graphs[level:])):
-                if i == len(graphs[level:]) - 1:
-                    res = self.beam_search(graph=layer, q=elem, k=10, eps=[point], ef=1)
-                    point = [x[0] for x in res]
-                else:
-                    point, dist = self.beam_search(graph=layer, q=elem, k=1, eps=[point], ef=1)[0]
+            for layer in reversed(graphs[level:]):
+                point, dist = self.beam_search(graph=layer, q=elem, k=1, eps=[point], ef=1)[0]
             layer0 = graphs[0]
             num_of_layers = level
             total_num_layers = len(graphs)
             for j, layer in enumerate(reversed(graphs[:level])):
                 level_m = m*((j+1)) if layer is not layer0 else self._m0 # num of neighbors for layer
-                if type(point) == list:
-                    candidates = self.beam_search(graph=layer, q=elem, k=level_m*2, eps=point, ef=self._ef_construction)
-                else:
-                    candidates = self.beam_search(graph=layer, q=elem, k=level_m*2, eps=[point], ef=self._ef_construction)
+                candidates = self.beam_search(graph=layer, q=elem, k=level_m*2, eps=[point], ef=self._ef_construction)
                 point = candidates[0][0]
                 neighbors = self.neighborhood_construction(candidates=candidates, curr=idx, k=level_m, distance_func=self.distance_func, data=self.data,level_=num_of_layers, num_levels=total_num_layers)
                 layer[idx] = neighbors
@@ -132,7 +121,7 @@ class HNSW:
                            
         for i in range(len(graphs), level):
             graphs.append({idx: []})
-        self._enter_point = self._find_new_median_point(graphs[-1])
+        self._enter_point = self._find_new_median_point(graphs[-1])   
             
     # can be used for search after jump        
     def search(self, q, k=1, ef=10, level=0, return_observed=True):
@@ -182,7 +171,11 @@ class HNSW:
 
             # check stop conditions #####
             observed_sorted = sorted( observed.items(), key=lambda a: a[1] )
+            # print(observed_sorted)
+            # if len(observed_sorted) > 0:
+            #     ef = min(max_ef, int(len(observed_sorted)*0.8))
             ef_largets = observed_sorted[ min(len(observed)-1, ef-1 ) ]
+            # print(ef_largets[0], '<->', -dist)
             if ef_largets[1] < dist: # самая большая ближе к q чем выкинутая, соседей выкинутой можно не смотреть
                 break
             #############################
@@ -222,3 +215,21 @@ class HNSW:
                 for src, neighborhood in graph.items():
                     for dst, dist in neighborhood: 
                         f.write(f'{src} {dst}\n')
+
+
+
+# n = int(sys.argv[1]) # graph size
+# dim = int(sys.argv[2]) # vector dimensionality
+# m = int(sys.argv[3]) # avg number of vertex
+# m0 = int(sys.argv[3]) # avg number of vertex for the lower layer
+
+# hnsw = HNSW( distance_func=l2_distance, m=5, m0=7, ef=10, ef_construction=30,  neighborhood_construction = heuristic)
+
+# k =5 
+# dim = 2
+# n = 1000
+# data = np.array(np.float32(np.random.random((n, dim))))
+
+
+# for x in data:
+#     hnsw.add(x)
