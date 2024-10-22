@@ -108,7 +108,7 @@ class HNSW:
             num_of_layers = level
             total_num_layers = len(graphs)
             for j, layer in enumerate(reversed(graphs[:level])):
-                level_m = m*((j+1)) if layer is not layer0 else self._m0 # num of neighbors for layer
+                level_m = m if layer is not layer0 else self._m0 # num of neighbors for layer
                 candidates = self.beam_search(graph=layer, q=elem, k=level_m*2, eps=[point], ef=self._ef_construction)
                 point = candidates[0][0]
                 neighbors = self.neighborhood_construction(candidates=candidates, curr=idx, k=level_m, distance_func=self.distance_func, data=self.data,level_=num_of_layers, num_levels=total_num_layers)
@@ -169,14 +169,9 @@ class HNSW:
                 ax.scatter(x=self.data[current_vertex][0], y=self.data[current_vertex][1], s=marker_size, color='red')
                 ax.annotate( len(visited), self.data[current_vertex] )
 
-            # check stop conditions #####
             observed_sorted = sorted( observed.items(), key=lambda a: a[1] )
-            # print(observed_sorted)
-            # if len(observed_sorted) > 0:
-            #     ef = min(max_ef, int(len(observed_sorted)*0.8))
             ef_largets = observed_sorted[ min(len(observed)-1, ef-1 ) ]
-            # print(ef_largets[0], '<->', -dist)
-            if ef_largets[1] < dist: # самая большая ближе к q чем выкинутая, соседей выкинутой можно не смотреть
+            if ef_largets[1] < dist:
                 break
             #############################
 
@@ -195,9 +190,6 @@ class HNSW:
                         # ax.annotate(len(visited), (self.data[neighbor][0], self.data[neighbor][1]))
                         ax.annotate(len(visited), self.data[neighbor])
                     
-        
-        # if len(observed_sorted) < k:
-        #     print("len(observed_sorted) < k")
         observed_sorted =sorted( observed.items(), key=lambda a: a[1] )
         if return_observed:
             return observed_sorted
@@ -215,21 +207,3 @@ class HNSW:
                 for src, neighborhood in graph.items():
                     for dst, dist in neighborhood: 
                         f.write(f'{src} {dst}\n')
-
-
-
-# n = int(sys.argv[1]) # graph size
-# dim = int(sys.argv[2]) # vector dimensionality
-# m = int(sys.argv[3]) # avg number of vertex
-# m0 = int(sys.argv[3]) # avg number of vertex for the lower layer
-
-# hnsw = HNSW( distance_func=l2_distance, m=5, m0=7, ef=10, ef_construction=30,  neighborhood_construction = heuristic)
-
-# k =5 
-# dim = 2
-# n = 1000
-# data = np.array(np.float32(np.random.random((n, dim))))
-
-
-# for x in data:
-#     hnsw.add(x)
