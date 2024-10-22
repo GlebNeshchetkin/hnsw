@@ -1,5 +1,12 @@
 # HNSW
 
+## Modifications
+> Some candidates in neighborhood_construction are randomly selected (lower lever - less randomly selected candidates) <br>
+
+> Ensure diversity by considering angular difference between candidates in neighborhood_construction <br>
+
+> Start point is selected as median point
+
 ## SIFT 10K Comparison
 
 | EF  | M0  | M   | Recall (Original HNSW) | Recall (Modified HNSW) | Avg Calc (Original HNSW) | Avg Calc (Modified HNSW) |
@@ -15,4 +22,5 @@
 | --- | --- | --- | ---------------------- | ---------------------- | ------------------------ | ------------------------ |
 | 64  | 16  | 16  | 0.91                   | 0.91                   | 836.4                    | **833.87**               |
 
+## SIFT 10K M0=32, M=16, EF = [0,...,100]
 ![download](https://github.com/user-attachments/assets/dc4b14f0-74c4-49d3-b1fe-e94da9ea6692)
