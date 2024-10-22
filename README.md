@@ -25,5 +25,6 @@
 ## SIFT 10K M0=32, M=16, EF = [0,...,100]
 > Recall == 1.0 for Modified algorithm achieved at EF=41 <br>
 > Recall == 1.0 for Original algorithm achieved at EF=54 <br>
-![download](https://github.com/user-attachments/assets/cd4e0f52-426e-4e3b-ab28-3362dc639240)
+![download](https://github.com/user-attachments/assets/e7aa8153-2096-4f24-a08d-565814b9e9db)
+
 
