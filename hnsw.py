@@ -123,15 +123,30 @@ class HNSW:
             graphs.append({idx: []})
         self._enter_point = self._find_new_median_point(graphs[-1])   
             
-    # can be used for search after jump        
-    def search(self, q, k=1, ef=10, level=0, return_observed=True):
-        graphs = self._graphs
-        point = self._enter_point
-        for layer in reversed(graphs[level:]):
-            point, dist = self.beam_search(layer, q=q, k=1, eps=[point], ef=1)[0]
+    # # can be used for search after jump        
+    # def search(self, q, k=1, ef=10, level=0, return_observed=True):
+    #     graphs = self._graphs
+    #     point = self._enter_point
+    #     for layer in reversed(graphs[level:]):
+    #         point, dist = self.beam_search(layer, q=q, k=1, eps=[point], ef=1)[0]
             
 
-        return self.beam_search(graph=graphs[level], q=q, k=k, eps=[point], ef=ef, return_observed=return_observed)
+    #     return self.beam_search(graph=graphs[level], q=q, k=k, eps=[point], ef=ef, return_observed=return_observed)
+    
+    def search(self, q, k=1, ef=10, level=0, return_observed=True, return_real_observed=True):
+        graphs = self._graphs
+        point = self._enter_point
+        observed_count = 0
+        for layer in reversed(graphs[level:]):
+            observed = self.beam_search(layer, q=q, k=1, eps=[point], ef=1, return_observed=return_observed)
+            point, dist = observed[0]
+            observed_count += len(observed)
+        res = self.beam_search(graph=graphs[level], q=q, k=k, eps=[point], ef=ef, return_observed=return_observed)
+        observed_count += len(res)
+        if return_real_observed:
+            return res, observed_count
+        else:
+            return res
 
     def beam_search(self, graph, q, k, eps, ef, ax=None, marker_size=20, return_observed=False):
         max_ef = k

@@ -33,9 +33,10 @@ def calculate_recall(distance_func, kg, test, groundtruth, k, ef, m):
         true_neighbors = true_neighbors[:k]  # Use only the top k ground truth neighbors
         entry_points = random.sample(range(len(kg.data)), m)
         # print(kg._graphs)
-        observed = [neighbor for neighbor, dist in kg.search(q=query, k=k, ef=ef, return_observed = True)]
+        observed, calcs = kg.search(q=query, k=k, ef=ef, return_observed = True)
+        observed = [neighbor for neighbor, dist in observed]
         # print(observed)
-        total_calc = total_calc + len(observed)
+        total_calc = total_calc + calcs
         results = observed[:k]
         # print(len(true_neighbors))
         intersection = len(set(true_neighbors).intersection(set(results)))
@@ -117,12 +118,19 @@ def main():
         hnsw.add(x)
         
     print("Last layer length is: ", len(hnsw._graphs[0]))
+    rec_1 = []
+    rec_2 = []
+    ac_1 = []
+    ac_2 = []
 
     # Calculate recall
     for ef__ in [i for i in range(1,101)]:
         recall, avg_cal = calculate_recall(l2_distance, hnsw, test_data, groundtruth_data, k=args.k, ef=ef__, m=args.m)
-        print(f"EF={ef__}, Average recall: {recall}, avg calc: {avg_cal}")
-    
+        rec_1.append(recall)
+        ac_1.append(avg_cal)
+        # print(f"EF={ef__}, Average recall: {recall}, avg calc: {avg_cal}")
+    print(rec_1)
+    print(ac_1)
     
     hnsw = hnsw_init.HNSW( distance_func=l2_distance, m=args.M, m0=args.M0, ef=10, ef_construction=30,  neighborhood_construction = hnsw_init.heuristic)
     # Add data to HNSW
@@ -135,7 +143,11 @@ def main():
     # Calculate recall
     for ef__ in [i for i in range(1,101)]:
         recall, avg_cal = calculate_recall(l2_distance, hnsw, test_data, groundtruth_data, k=args.k, ef=ef__, m=args.m)
-        print(f"EF={ef__}, Average recall: {recall}, avg calc: {avg_cal}")
+        rec_2.append(recall)
+        ac_2.append(avg_cal)
+    print(rec_2)
+    print(ac_2)
+        # print(f"EF={ef__}, Average recall: {recall}, avg calc: {avg_cal}")
 
 if __name__ == "__main__":
     main()
